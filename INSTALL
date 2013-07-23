@@ -1,0 +1,13 @@
+Installation instruction
+
+Patch the database : 
+drop it and then add the content pdns.sql.bz2
+Add a readonly user named
+MYSQLu=pdns_ro
+MYSQLdb=pdns
+MYSQLh=127.0.0.1
+With only write access on cryptotime table, ro elsewhere
+
+Put the pdnsec.sh script in /usr/local/sbin (or anywhere else)
+
+Place a daily cron

@@ -1,0 +1,9 @@
+#!/bin/bash
+
+#cron.daily
+#domain $DOMAIN to be replaced 
+/root/pdnssec.sh -D $DOMAIN -A active_ZSK
+/root/pdnssec.sh -D $DOMAIN -A destroy_ZSK
+/root/pdnssec.sh -D $DOMAIN -A mark_old_ZSK
+
+
