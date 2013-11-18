@@ -37,35 +37,35 @@
 
 function usage {
 
-    echo "usage: $0 options
-    
-    This script accept the following parameters
-    
-    OPTIONS:  ( * means mandatory )
-   * -D domain name (FQDN format)  
-   * -A Action 
-	active_ZSK : create if needed and active a new ZSK, only if no ZSK < 10 days are available.
-		     all current ZSK older than 10 days are marked to be dropped
-		     Do nothing if a ZSK is active and has not yet 10 days old.
+	echo "usage: $0 options
 
-	destroy_ZSK : select all marked ZSK and destroy them only if on active ZSK remain, else do nothing
-	
-	mark_old_ZSK  : Mark all current ZSK that are older than 10 days to be destroy.
-     -h show this message
-     -d Debug : Print debug message"
+		This script accept the following parameters
+
+		OPTIONS:  ( * means mandatory )
+		* -D domain name (FQDN format)  
+		* -A Action 
+		active_ZSK : create if needed and active a new ZSK, only if no ZSK < 10 days are available.
+		all current ZSK older than 10 days are marked to be dropped
+		Do nothing if a ZSK is active and has not yet 10 days old.
+
+		destroy_ZSK : select all marked ZSK and destroy them only if on active ZSK remain, else do nothing
+
+		mark_old_ZSK  : Mark all current ZSK that are older than 10 days to be destroy.
+		-h show this message
+		-d Debug : Print debug message"
 }
 
 #Récupération des arguments
 
 #-ve -ip -hostname -pass -disk -mem -memlim -pack -login
 while getopts "D:A: dh" options; do
-    case $options in
-        D) DOMAIN=$OPTARG;;
-        A) ACTION=$OPTARG;;
-        d) DEBUG=1;;
-        h) usage
-        exit 1;;
-    esac
+case $options in
+D) DOMAIN=$OPTARG;;
+A) ACTION=$OPTARG;;
+d) DEBUG=1;;
+h) usage
+exit 1;;
+esac
 done
 
 PDNSSEC=$( which pdnssec );
@@ -104,9 +104,9 @@ function debug {
 
 #As the name said
 check_param() {
-debug  "In check_param"
+	debug  "In check_param"
 # check if given DOMAIN is fqdn and exist.
-	if [[ -z $DOMAIN ]]; then usage;exit 1; fi;
+		if [[ -z $DOMAIN ]]; then usage;exit 1; fi;
 	if [[ -z $ACTION ]]; then usage;exit 1; fi; 
 	sql_domain_id
 		if [[ -z $MysqlDomainId ]]; then echo "Domain $DOMAIN doesn't exist in pdns database"; exit 1; fi
@@ -223,7 +223,7 @@ function select_zsk_inactive_key {
 function destroy_ZSK {
 	debug "In destroy_ZSK"
 		MYSQLtbl=v_crypto
-		SqlQuery=$( mysql -h $MYSQLh -D $MYSQLdb -u $MYSQLu -B -N -e "SELECT key_id FROM $MYSQLtbl where eraseable < NOW() - INTERVAL 10 DAY and eraseable <> '0000-00-00 00:00:00' and domain_id='$MysqlDomainId'; " )
+		SqlQuery=$( mysql -h $MYSQLh -D $MYSQLdb -u $MYSQLu -B -N -e "SELECT key_id FROM $MYSQLtbl where activated < NOW() - INTERVAL 10 DAY and eraseable <> '0000-00-00 00:00:00' and domain_id='$MysqlDomainId'; " )
 		if [ $? -ne "0" ]; then echo " Select in Db failed, exit"; exit; fi
 			if [[ -n $SqlQuery ]]; then
 				debug "In destroy_ZSK : SqlQuery=$SqlQuery"
@@ -241,23 +241,24 @@ function destroy_ZSK {
 											i=$(($i + 1))
 											fi
 											done;
-	else echo "No key to destroy, try action mark_old_key and try again later"; exit 0; fi
+									else echo "No key to destroy, try action mark_old_key and try again later"; exit 0; fi
 }
 
 # Mark all keys older than 10 days to be deleted
 function mark_old_ZSK {
 	debug "In mark_old_ZSK"
-	MYSQLtbl=v_crypto
-	zsk_active
-	Nb_key=${#tab_zsk_active[@]}
+		MYSQLtbl=v_crypto
+		zsk_active
+		Nb_key=${#tab_zsk_active[@]}
 	for ((i=0; i < Nb_key; i++)); do
 		SqlQuery=$(  mysql -h $MYSQLh -D $MYSQLdb -u $MYSQLu -B -N -e  "SELECT key_id from $MYSQLtbl where key_id='${tab_zsk_active[$i]}' and eraseable='0000-00-00 00:00:00' and activated < NOW() - INTERVAL 10 DAY and domain_id='$MysqlDomainId'; ")
-			if [[ -z $SqlQuery ]]; then echo "No key to mark as old"; exit 0; fi
-	MYSQLtbl=cryptotime
-				#SqlQuery=$( mysql -h $MYSQLh -D $MYSQLdb -u $MYSQLu -B -N -e "UPDATE $MYSQLtbl set eraseable=NOW() where key_id='${tab_zsk_active[$i]}' and eraseable='0000-00-00 00:00:00' and activated < NOW() - INTERVAL 10 DAY and domain_id='$MysqlDomainId'; " )
-				SqlQuery=$( mysql -h $MYSQLh -D $MYSQLdb -u $MYSQLu -B -N -e "UPDATE $MYSQLtbl set eraseable=NOW() where key_id='${tab_zsk_active[$i]}' and eraseable='0000-00-00 00:00:00' and activated < NOW() - INTERVAL 10 DAY; " )
-					if [ $? -ne "0" ]; then debug "In mark_old_ZSK : Update in Db failed, exit"; exit 1; fi
-						done
+			if [[ -z $SqlQuery ]]; then echo "No key to mark as old"; else 
+				MYSQLtbl=cryptotime
+#SqlQuery=$( mysql -h $MYSQLh -D $MYSQLdb -u $MYSQLu -B -N -e "UPDATE $MYSQLtbl set eraseable=NOW() where key_id='${tab_zsk_active[$i]}' and eraseable='0000-00-00 00:00:00' and activated < NOW() - INTERVAL 10 DAY and domain_id='$MysqlDomainId'; " )
+					SqlQuery=$( mysql -h $MYSQLh -D $MYSQLdb -u $MYSQLu -B -N -e "UPDATE $MYSQLtbl set eraseable=NOW() where key_id='${tab_zsk_active[$i]}' and eraseable='0000-00-00 00:00:00' and activated < NOW() - INTERVAL 10 DAY; " )
+					if [ $? -ne "0" ]; then debug "In mark_old_ZSK : Update in Db failed, go to next step"; fi
+						fi
+							done
 							debug "Out mark_old_ZSK"
 }
 
@@ -269,7 +270,7 @@ function check_nb_active_zsk {
 		debug "In check_nb_active_zsk : MysqlZSKid=$MysqlZSKid"
 		i=0
 		for keyid in $( echo $MysqlZSKid ); do
-				MysqlZSKidOk[$i]=$( mysql -h $MYSQLh -D $MYSQLdb -u $MYSQLu -B -N -e "SELECT key_id FROM $MYSQLtbl where key_id=$keyid and activated BETWEEN NOW() - INTERVAL 10 DAY AND NOW()"; )
+			MysqlZSKidOk[$i]=$( mysql -h $MYSQLh -D $MYSQLdb -u $MYSQLu -B -N -e "SELECT key_id FROM $MYSQLtbl where key_id=$keyid and activated BETWEEN NOW() - INTERVAL 10 DAY AND NOW()"; )
 				if [[ -n ${MysqlZSKidOk["$i"]} ]]; then
 					debug "In check_nb_active_zsk - MysqlZSKidOk[$i] : ${MysqlZSKidOk["$i"]};"
 						i=$(($i + 1))
