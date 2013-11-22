@@ -214,7 +214,7 @@ function select_zsk_inactive_key {
 			ID_to_active=${tab_zsk_inactive[0]}
 	debug " In select_zsk_inactive_key ID_to_active : $ID_to_active"
 		else
-			debug "In select_zsk_inactive_key : Generation d'une nouvelle cle à faire"
+			debug "In select_zsk_inactive_key : Generation d'une nouvelle cle ï¿½ faire"
 				fi
 }
 
@@ -266,7 +266,7 @@ function mark_old_ZSK {
 #Return the number of active zsk key
 function check_nb_active_zsk {
 	MYSQLtbl=v_crypto
-		MysqlZSKid=$( mysql -h $MYSQLh -D $MYSQLdb -u $MYSQLu -B -N -e "SELECT id FROM $MYSQLtbl where domain_id='$MysqlDomainId' and active=1 and flags='256'"; )
+		MysqlZSKid=$( mysql -h $MYSQLh -D $MYSQLdb -u $MYSQLu -B -N -e "SELECT key_id FROM $MYSQLtbl where domain_id='$MysqlDomainId' and active=1 and flags='256'"; )
 		debug "In check_nb_active_zsk : MysqlZSKid=$MysqlZSKid"
 		i=0
 		for keyid in $( echo $MysqlZSKid ); do
