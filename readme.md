@@ -1,4 +1,8 @@
-Powerdns Dnssec update key
+Author : goacid
+Licence : GPL
+
+Powerdns Dnssec update zsk keys
+Bash script
 
 Working on pdns-3.1.4 with mysql backend only
 
